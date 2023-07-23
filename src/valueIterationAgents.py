@@ -45,14 +45,13 @@ class ValueIterationAgent(ValueEstimationAgent):
         # Write value iteration code here
         "*** YOUR CODE HERE ***"
 
-        new_values = util.Counter()
-
         for i in range(iterations):
+            new_values = self.values.copy()
             for state in mdp.getStates():
                 max_action, new_value = self.computeActionAndNewValueFromValues(state)
-                new_values[state] = new_value
+                if(new_value != None):
+                    new_values[state] = new_value
             self.values = new_values
-
 
     def getValue(self, state):
         """
@@ -66,28 +65,24 @@ class ValueIterationAgent(ValueEstimationAgent):
           value function stored in self.values.
         """
         "*** YOUR CODE HERE ***"
-        q_value = 0
+        q_value = self.mdp.getReward(state, None, None)
         for state_, prob in self.mdp.getTransitionStatesAndProbs(state, action):
             q_value += prob*self.discount*self.getValue(state_)
         return q_value
 
     def computeActionAndNewValueFromValues(self, state):
-        max_action_init = False
-        max_action_value = 0
-        max_action = 0
+        max_action_value = None
+        max_action = None
         reward = 0
-        for action in mdp.getPossibleActions(state):
-            for nextState, p in mdp.getTransitionStatesAndProbs(state, action):
-                reward = mdp.getReward(state, action, nextState)
-                action_value = self.computeQValueFromValues(state, action)
-                if(max_action_init == False):
-                    max_action_init = True
-                    max_action_value = action_value
-                    max_action = action
-                elif(max_action_value < action_value):
-                    max_action_value = action_value
-                    max_action = action
-        new_value = max_action_value + reward
+        for action in self.mdp.getPossibleActions(state):
+            action_value = self.computeQValueFromValues(state, action)
+            if(max_action == None):
+                max_action_value = action_value
+                max_action = action
+            elif(max_action_value < action_value):
+                max_action_value = action_value
+                max_action = action
+        new_value = max_action_value
         return max_action, new_value
 
     def computeActionFromValues(self, state):
